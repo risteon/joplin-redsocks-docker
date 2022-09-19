@@ -5,6 +5,9 @@ ARG DOCKER_PROXY
 ENV http_proxy="${DOCKER_PROXY}"
 ENV https_proxy="${DOCKER_PROXY}"
 
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ="Europe/Berlin"
+
 RUN set -ex && \
   apt-get update && \
   apt-get install -y --no-install-recommends \
@@ -12,10 +15,25 @@ RUN set -ex && \
   # Joplin
   fuse libfuse-dev \
   # Joplin deps
-  sudo libgtk2.0-0 libgtk3.0-cil libxshmfence-dev libnss3 libatk-bridge2.0-0 libdrm2 libgbm1 \
+  sudo libgtk2.0-0
+
+RUN set -ex && \
+  apt-get update && \
+  apt-get install -y \
+  libgtk3.0-cil
+
+RUN set -ex && \
+  apt-get update && \
+  apt-get install -y \
+  libxshmfence-dev libnss3 libatk-bridge2.0-0 libdrm2 libgbm1 \
   # show emojis in Joplin notebooks
   fonts-noto-color-emoji \
   xdg-utils
+
+RUN set -ex && \
+  apt-get update && \
+  apt-get install -y --no-install-recommends \
+  libasound2
 
 # just for debugging
 #RUN apt-get install htop vim iproute2 -qy
@@ -32,7 +50,7 @@ WORKDIR /home/joplin
 COPY entrypoint.sh .
 COPY redsocks.conf .
 RUN rm -f /etc/redsocks.conf
-RUN ln -s redsocks.conf /etc/redsocks.conf
+RUN ln -s "$(pwd)/redsocks.conf" /etc/redsocks.conf
 
 # Joplin
 USER joplin
